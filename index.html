@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>한부모가족 정책 및 실태 아카이브 (연구자용)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; line-height: 1.6; margin: 0; padding: 0; background-color: #f4f7f9; color: #333; }
+        header { background-color: #1e3a8a; color: white; padding: 40px 20px; text-align: center; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); }
+        main { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
+        section { background-color: white; padding: 30px; margin-bottom: 25px; border-radius: 12px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08); border-top: 5px solid #3b82f6; }
+        h2 { color: #1e3a8a; border-bottom: 2px solid #3b82f6; padding-bottom: 10px; margin-top: 0; font-size: 1.75rem; font-weight: 700; }
+        .purpose { font-style: italic; color: #4b5563; margin-bottom: 20px; border-left: 4px solid #fbbf24; padding-left: 10px; }
+        
+        .year-selector { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+        .year-button { background-color: #e5e7eb; border: none; padding: 12px 20px; cursor: pointer; transition: all 0.3s; border-radius: 8px; font-weight: 600; color: #4b5563; }
+        .year-button:hover { background-color: #d1d5db; }
+        
+        .primary-button { background-color: #10b981; color: white; border: none; padding: 12px 25px; border-radius: 6px; cursor: pointer; font-size: 1.1rem; transition: background-color 0.3s, transform 0.2s; box-shadow: 0 3px 6px rgba(16, 185, 129, 0.4); }
+        .primary-button:hover { background-color: #059669; transform: translateY(-1px); }
+
+        .modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.7); display: none; 
+            justify-content: center; align-items: center; z-index: 1000;
+        }
+        .modal-content {
+            background-color: white; padding: 30px; border-radius: 12px;
+            width: 90%; max-width: 700px; max-height: 90vh; overflow-y: auto;
+            position: relative; animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .close-button {
+            position: absolute; top: 15px; right: 15px; font-size: 1.5rem;
+            font-weight: bold; cursor: pointer; color: #6b7280;
+        }
+
+        .timeline { position: relative; padding-left: 120px; }
+        .timeline:before {
+            content: ''; position: absolute; left: 90px; top: 0; bottom: 0;
+            width: 4px; background-color: #ccc; border-radius: 2px;
+        }
+        .timeline-item { position: relative; margin-bottom: 20px; }
+        .timeline-date {
+            position: absolute; left: -30px; top: 0; font-weight: bold;
+            width: 100px; text-align: right; color: #3b82f6; font-size: 1rem;
+        }
+        .timeline-dot {
+            position: absolute; left: 88px; top: 3px; width: 8px; height: 8px;
+            background-color: #3b82f6; border: 2px solid #fff; border-radius: 50%;
+        }
+        .timeline-content {
+            background: #f8fafc; padding: 12px 15px; border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); margin-left: 15px;
+        }
+        .timeline-content h4 {
+            font-size: 1rem;
+            margin-bottom: 6px;
+        }
+        .timeline-content p {
+            font-size: 0.875rem;
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        @media (max-width: 768px) {
+            .timeline:before { left: 5px; }
+            .timeline-item { margin-bottom: 20px; }
+            .timeline-date { position: relative; left: 0; text-align: left; margin-bottom: 5px; width: auto; }
+            .timeline-dot { left: 3px; }
+            .timeline-content { margin-left: 10px; padding: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1 class="text-4xl font-extrabold mb-2">
+        한부모가족 정책 연구를 위한 심층 통합 아카이브
+    </h1>
+    <p class="text-lg font-light">
+        증거 기반 정책 설계(Evidence-based Policy)를 위한 핵심 근거를 제공합니다.
+    </p>
+    <button class="primary-button mt-6">
+        통합 아카이브 자료 열람
+    </button>
+</header>
+
+<main>
+    <!-- 1. 한부모가족 실태조사 아카이브 -->
+    <section id="section1" class="data-archive">
+        <h2>1️⃣ 연도별 실태조사 아카이브: 실태 변화 추적 및 분석</h2>
+        <p class="purpose">제공된 PDF 파일을 기반으로 정량적 실태조사 결과를 시계열적 변화 동향과 함께 제공합니다.</p>
+
+        <div class="year-selector" id="yearSelector"></div>
+
+        <div class="mt-8 p-4 bg-gray-100 rounded-lg">
+            <p class="text-sm text-gray-700">원하시는 연도의 '실태조사 분석 보기' 버튼을 클릭하여 주요 내용을 요약하고 원본 PDF를 다운로드할 수 있습니다.</p>
+        </div>
+        
+        <div class="mt-8">
+            <h4 class="text-lg font-semibold text-indigo-700 mb-3">주요 변화 지표 시각화 (Placeholder)</h4>
+            <div class="h-64 bg-gray-200 flex items-center justify-center text-gray-500 rounded-lg">
+                📊 인터랙티브 실태조사 지표 변화 비교 시각화 공간
+            </div>
+            <button onclick="showKPIModal()" class="primary-button mt-4" style="background-color: #db2777;">📊 "변화 보기" 버튼: 특정 지표 연도별 추적</button>
+        </div>
+    </section>
+
+    <!-- 2. 한부모가족지원사업 + 예산 정보 -->
+    <section id="section2" class="policy-budget">
+        <h2>2️⃣ 지원사업 및 예산 정보: 정책 집행의 규모와 흐름 시각화</h2>
+        <p class="purpose">10년간 정부 예산 집행 현황을 인터랙티브 차트로 구현하여, 자원 배분의 효율성 및 정책 우선순위 분석이 가능합니다.</p>
+
+        <div class="budget-charts">
+            <!-- 차트 1: 통합 예산 규모 및 핵심 사업 추이 -->
+            <div class="bg-white p-6 rounded-xl shadow-xl mb-8 border border-gray-100">
+                <h3 class="text-xl font-bold mb-4 border-b pb-2 text-indigo-700">
+                    1. 통합 예산 규모 및 핵심 사업 추이 비교 (막대-꺾은선 혼합)
+                </h3>
+                <p class="text-sm text-gray-500 mb-4">
+                    총 예산 규모와 양육비 지원 예산의 연간 성장 추이를 동시에 분석합니다. (우측 축: 양육비 지원)
+                </p>
+                <div class="relative h-96">
+                    <canvas id="totalBudgetChart"></canvas>
+                </div>
+            </div>
+
+            <!-- 차트 2: 세부 사업별 비중 변화 -->
+            <div class="bg-white p-6 rounded-xl shadow-xl mb-8 border border-gray-100">
+                <h3 class="text-xl font-bold mb-4 border-b pb-2 text-indigo-700">
+                    2. 세부 사업별 예산 비중 변화 (누적 막대)
+                </h3>
+                <p class="text-sm text-gray-500 mb-4">
+                    전체 예산 내에서 각 세부 사업이 차지하는 상대적 비중 변화를 연도별로 추적합니다.
+                </p>
+                <div class="relative h-96">
+                    <canvas id="breakdownChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. 한부모가족지원법 아카이브 + 개정 동향 -->
+    <section id="section3" class="law-archive">
+        <h2>3️⃣ 법령 아카이브: 법제도의 연혁과 주요 개정 근거</h2>
+        <p class="purpose">「한부모가족지원법」의 입법 히스토리를 타임라인으로 정리하고, 주요 조항의 개정 전/후를 비교합니다.</p>
+
+        <div class="flex justify-end mb-6">
+             <a href="https://www.mogef.go.kr/mp/pcd/mp_pcd_s001d.do?mid=plc503" target="_blank" class="primary-button" style="background-color: #16a34a;">
+                 ⚖️ 현재 시행 법령(법제처) 바로가기
+             </a>
+             <a href="https://www.mogef.go.kr/mp/pcd/mp_pcd_s001d.do?mid=plc503" target="_blank" class="primary-button ml-3" style="background-color: #3b82f6;">
+                 📊 실태조사 자료 바로가기
+             </a>
+        </div>
+
+        <div class="timeline">
+            <div class="timeline-item">
+                <div class="timeline-dot"></div>
+                <div class="timeline-date">1989년</div>
+                <div class="timeline-content">
+                    <h4 class="font-semibold text-lg text-gray-900">제정 (모자복지법)</h4>
+                    <p class="text-sm text-gray-600">최초 '모자복지법'으로 제정되어, 모자복지시설 설치 및 비용 보조 근거 마련.</p>
+                </div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-dot"></div>
+                <div class="timeline-date">2007년</div>
+                <div class="timeline-content">
+                    <h4 class="font-semibold text-lg text-gray-900">법률 전면 개정 (한부모가족지원법으로 명칭 변경)</h4>
+                    <p class="text-sm text-gray-600">법의 명칭을 <strong>'한부모가족지원법'</strong>으로 변경하며, <strong>부자가족</strong>까지 지원 대상으로 공식 확대.</p>
+                </div>
+            </div>
+            
+            <div class="timeline-item">
+                <div class="timeline-dot"></div>
+                <div class="timeline-date">2011년</div>
+                <div class="timeline-content">
+                    <h4 class="font-semibold text-lg text-gray-900">핵심 개정: 차별 금지 및 지원 강화</h4>
+                    <p class="text-sm text-gray-600">① <strong>차별 금지 규정 신설</strong>: 임신, 출산, 양육을 이유로 교육/고용에서 차별받지 않도록 규정.<br>② <strong>복지 급여 의무화</strong>: 청소년 한부모 등 특정 대상에게 추가 복지 급여 의무화.<br>③ <strong>법률구조 서비스 추가</strong>: 자녀양육비 청구 등 법률상담 및 소송대리 근거 마련.</p>
+                </div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-dot"></div>
+                <div class="timeline-date">2014년</div>
+                <div class="timeline-content">
+                    <h4 class="font-semibold text-lg text-gray-900">실태조사 주기의 법제화</h4>
+                    <p class="text-sm text-gray-600">여성가족부 장관이 <strong>3년마다</strong> 한부모가족 실태조사를 실시하고 그 결과를 공표하도록 법제화.</p>
+                </div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-dot"></div>
+                <div class="timeline-date">2018년</div>
+                <div class="timeline-content">
+                    <h4 class="font-semibold text-lg text-gray-900">양육비 이행 강화</h4>
+                    <p class="text-sm text-gray-600">양육비 이행관리원 설치 근거 마련 및 비양육부모의 양육비 지급 이행 강제 수단 확대.</p>
+                </div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-dot"></div>
+                <div class="timeline-date">2023년</div>
+                <div class="timeline-content">
+                    <h4 class="font-semibold text-lg text-gray-900">복지시설 기능 중심 개편</h4>
+                    <p class="text-sm text-gray-600">복지시설 유형을 기능 중심으로 재편 (출산지원시설, 양육지원시설, 생활지원시설 등). <strong>부(父)의 일시지원시설 입소 근거 마련</strong>.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. 한부모 젠더정책 동향 -->
+    <section id="section4" class="gender-policy">
+        <h2>4️⃣ 젠더정책 동향: 젠더 관점의 정책 분석 및 정책 제언</h2>
+        <p class="purpose">한부모 이슈에 대한 사회적 담론과 젠더 정책의 연관성을 추적하고, 증거 기반 정책 제언을 제공합니다.</p>
+
+        <div class="h-48 bg-gray-200 flex items-center justify-center text-gray-500 rounded-lg">
+            📰 한부모 정책 키워드 분석 및 핵심 정책 Placeholder
+        </div>
+        <button onclick="showPolicyModal()" class="primary-button mt-4" style="background-color: #9333ea;">📋 정책 동향</button>
+    </section>
+</main>
+
+<footer>
+    <p class="text-center text-sm text-gray-500 py-4 border-t mt-10">
+        © 한부모가족 정책 아카이브. 자료의 인용 시 출처 표기 가이드라인을 준수하십시오.
+    </p>
+</footer>
+
+<!-- 모달 창 - 실태조사 -->
+<div id="surveyModal" class="modal" onclick="closeModal(event, 'surveyModal')">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <span class="close-button" onclick="closeModal(null, 'surveyModal')">&times;</span>
+        <h3 id="modalTitle" class="text-2xl font-bold mb-4 text-indigo-800"></h3>
+        <p class="text-gray-600 mb-6">출처: 여성가족부 / 연구기관: 한국여성정책연구원</p>
+
+        <div id="modalContent" class="space-y-4 text-gray-700"></div>
+
+        <div class="mt-8 pt-4 border-t">
+            <a id="downloadLink" href="#" target="_blank" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium">
+                📄 실태조사 PDF 원본 다운로드
+            </a>
+            <button onclick="closeModal(null, 'surveyModal')" class="px-4 py-2 ml-4 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400">닫기</button>
+        </div>
+    </div>
+</div>
+
+<!-- 모달 창 - KPI 변화 지표 -->
+<div id="kpiModal" class="modal" onclick="closeModal(event, 'kpiModal')">
+    <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 1000px;">
+        <span class="close-button" onclick="closeModal(null, 'kpiModal')">&times;</span>
+        <h3 class="text-2xl font-bold mb-6 text-indigo-800 text-center">핵심 지표 변화 추이 및 아동양육비 지급액 변화 (2015 vs 2024)</h3>
+        
+        <!-- 탭 메뉴 -->
+        <div class="flex border-b mb-6">
+            <button onclick="switchTab('kpi')" id="kpiTab" class="px-6 py-3 font-semibold text-blue-600 border-b-2 border-blue-600">1. 현황 비교 (KPI)</button>
+            <button onclick="switchTab('detail')" id="detailTab" class="px-6 py-3 font-semibold text-gray-500 hover:text-gray-700">2. 법 개정 역사 (연표의 변화)</button>
+        </div>
+
+        <!-- KPI 탭 내용 -->
+        <div id="kpiContent">
+            <p class="text-center text-lg font-semibold mb-8 text-gray-700">분석 요약: '정책 집중성'의 획기적 개선과 '경제적 안정'의 고착화</p>
+            <div class="flex justify-center gap-2 mb-8 text-sm">
+                <span class="px-3 py-1 bg-orange-100 text-orange-700 rounded-full">● 2015년 (설문조사)</span>
+                <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full">● 2024년 (최종 데이터)</span>
+            </div>
+
+            <!-- KPI 카드 3개 -->
+            <div class="grid grid-cols-3 gap-6 mb-8">
+                <!-- 월평균 가구소득 -->
+                <div class="border-2 border-green-200 rounded-xl p-6 bg-gradient-to-br from-green-50 to-white shadow-lg hover:shadow-xl transition-shadow">
+                    <h4 class="text-lg font-bold text-green-700 mb-6 text-center">월평균 가구소득 (만원)</h4>
+                    
+                    <!-- 비교 바 차트 스타일 -->
+                    <div class="space-y-4 mb-6">
+                        <div>
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm font-semibold text-gray-600">2015년</span>
+                                <span class="text-2xl font-bold text-orange-600">189.6</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-3">
+                                <div class="bg-orange-500 h-3 rounded-full" style="width: 64.3%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-center">
+                            <div class="text-green-600 font-bold text-xl">↓ +105만원</div>
+                        </div>
+                        
+                        <div>
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm font-semibold text-gray-600">2024년</span>
+                                <span class="text-2xl font-bold text-blue-600">294.6</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-3">
+                                <div class="bg-blue-600 h-3 rounded-full" style="width: 100%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-sm bg-green-100 text-green-800 px-4 py-3 rounded-lg font-semibold text-center border border-green-300">
+                        10년 간 증가액: <span class="text-lg">+105만원 ↑</span>
+                    </div>
+                    <p class="text-xs text-gray-600 mt-4 leading-relaxed">생활 스트레스가 감소되고, 양육비 지원 가구 소득 대비 비중이 높아지면서 안정성이 다소 개선되었습니다.</p>
+                </div>
+
+                <!-- 정부 지원 수혜율 -->
+                <div class="border-2 border-yellow-200 rounded-xl p-6 bg-gradient-to-br from-yellow-50 to-white shadow-lg hover:shadow-xl transition-shadow">
+                    <h4 class="text-lg font-bold text-yellow-700 mb-6 text-center">정부 지원 수혜율 (%)</h4>
+                    
+                    <!-- 원형 진행 표시 스타일 -->
+                    <div class="flex justify-around items-center mb-6">
+                        <div class="text-center">
+                            <div class="relative w-24 h-24 mx-auto mb-2">
+                                <svg class="transform -rotate-90 w-24 h-24">
+                                    <circle cx="48" cy="48" r="40" stroke="#fed7aa" stroke-width="8" fill="none" />
+                                    <circle cx="48" cy="48" r="40" stroke="#fb923c" stroke-width="8" fill="none"
+                                        stroke-dasharray="251.2" stroke-dashoffset="174.3" stroke-linecap="round" />
+                                </svg>
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <span class="text-2xl font-bold text-orange-600">30.7</span>
+                                </div>
+                            </div>
+                            <div class="text-xs text-gray-600 font-semibold">2015년</div>
+                        </div>
+                        
+                        <div class="text-yellow-600 font-bold text-2xl">→</div>
+                        
+                        <div class="text-center">
+                            <div class="relative w-24 h-24 mx-auto mb-2">
+                                <svg class="transform -rotate-90 w-24 h-24">
+                                    <circle cx="48" cy="48" r="40" stroke="#bfdbfe" stroke-width="8" fill="none" />
+                                    <circle cx="48" cy="48" r="40" stroke="#3b82f6" stroke-width="8" fill="none"
+                                        stroke-dasharray="251.2" stroke-dashoffset="85.7" stroke-linecap="round" />
+                                </svg>
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <span class="text-2xl font-bold text-blue-600">65.9</span>
+                                </div>
+                            </div>
+                            <div class="text-xs text-gray-600 font-semibold">2024년</div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-sm bg-yellow-100 text-yellow-800 px-4 py-3 rounded-lg font-semibold text-center border border-yellow-300">
+                        10년 간 상대 도달률 변화: <span class="text-lg">+35.2%p ↑</span>
+                    </div>
+                    <p class="text-xs text-gray-600 mt-4 leading-relaxed">제도 대상 확대 및 모든 신청으로 정책의 "도달성"이 획기적으로 높아졌습니다.</p>
+                </div>
+
+                <!-- 양육비 미지급률 -->
+                <div class="border-2 border-red-200 rounded-xl p-6 bg-gradient-to-br from-red-50 to-white shadow-lg hover:shadow-xl transition-shadow">
+                    <h4 class="text-lg font-bold text-red-700 mb-6 text-center">양육비 미지급률 (%)</h4>
+                    
+                    <!-- 사람 아이콘 스타일 표현 -->
+                    <div class="space-y-4 mb-6">
+                        <div>
+                            <div class="flex justify-between items-center mb-3">
+                                <span class="text-sm font-semibold text-gray-600">2015년</span>
+                                <span class="text-2xl font-bold text-orange-600">77.7%</span>
+                            </div>
+                            <div class="flex gap-1 flex-wrap">
+                                <div class="w-8 h-8 bg-orange-500 rounded-sm" title="미지급"></div>
+                                <div class="w-8 h-8 bg-orange-500 rounded-sm" title="미지급"></div>
+                                <div class="w-8 h-8 bg-orange-500 rounded-sm" title="미지급"></div>
+                                <div class="w-8 h-8 bg-orange-500 rounded-sm" title="미지급"></div>
+                                <div class="w-8 h-8 bg-orange-500 rounded-sm" title="미지급"></div>
+                                <div class="w-8 h-8 bg-orange-500 rounded-sm" title="미지급"></div>
+                                <div class="w-8 h-8 bg-orange-500 rounded-sm" title="미지급"></div>
+                                <div class="w-8 h-8 bg-orange-500 rounded-sm opacity-70" title="미지급"></div>
+                                <div class="w-8 h-8 bg-orange-200 rounded-sm" title="지급"></div>
+                                <div class="w-8 h-8 bg-orange-200 rounded-sm" title="지급"></div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <div class="flex justify-between items-center mb-3">
+                                <span class="text-sm font-semibold text-gray-600">2024년</span>
+                                <span class="text-2xl font-bold text-blue-600">71.3%</span>
+                            </div>
+                            <div class="flex gap-1 flex-wrap">
+                                <div class="w-8 h-8 bg-blue-600 rounded-sm" title="미지급"></div>
+                                <div class="w-8 h-8 bg-blue-600 rounded-sm" title="미지급"></div>
+                                <div class="w-8 h-8 bg-blue-600 rounded-sm" title="미지급"></div>
+                                <div class="w-8 h-8 bg-blue-600 rounded-sm" title="미지급"></div>
+                                <div class="w-8 h-8 bg-blue-600 rounded-sm" title="미지급"></div>
+                                <div class="w-8 h-8 bg-blue-600 rounded-sm" title="미지급"></div>
+                                <div class="w-8 h-8 bg-blue-600 rounded-sm" title="미지급"></div>
+                                <div class="w-8 h-8 bg-blue-200 rounded-sm" title="지급"></div>
+                                <div class="w-8 h-8 bg-blue-200 rounded-sm" title="지급"></div>
+                                <div class="w-8 h-8 bg-blue-200 rounded-sm" title="지급"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-sm bg-red-100 text-red-800 px-4 py-3 rounded-lg font-semibold text-center border border-red-300">
+                        10년 간 변화: <span class="text-lg">-6.4%p ↓</span>
+                    </div>
+                    <p class="text-xs text-gray-600 mt-4 leading-relaxed">약간의 개선 추세로 보이나 절대수치 자체가 여전히 "10인 중 7명이 못 받음"을 의미합니다.</p>
+                </div>
+            </div>
+
+            <!-- 차트 3개 -->
+            <div class="grid grid-cols-3 gap-6">
+                <div class="border rounded-lg p-4 bg-white">
+                    <h5 class="font-semibold text-center mb-3">1. 정부 지원 수혜율의 극적 개선</h5>
+                    <div class="h-48 relative">
+                        <canvas id="Chart1"></canvas>
+                    </div>
+                    <p class="text-xs text-gray-600 mt-3">**"정책 접근성"**의 10년 간의 "절대 비상"* 증거입니다. 예측 도달 비중이 상승하니 실태조사 과제는 다음에 더욱 명확합니다.</p>
+                </div>
+
+                <div class="border rounded-lg p-4 bg-white">
+                    <h5 class="font-semibold text-center mb-3">2. 소득 및 양육비 문제의 고착화</h5>
+                    <div class="h-48 relative">
+                        <canvas id="Chart2"></canvas>
+                    </div>
+                    <p class="text-xs text-gray-600 mt-3">**"소득"은 완만히 증가하지만, **"양육비 미지급"** 은 큰 폭 없이 교착되었고, 이는 다른 방안이 요구됨을 입증합니다.</p>
+                </div>
+
+                <div class="border rounded-lg p-4 bg-white">
+                    <h5 class="font-semibold text-center mb-3">3. 월 아동양육비 지급액 변화 추이</h5>
+                    <div class="h-48 relative">
+                        <canvas id="Chart3"></canvas>
+                    </div>
+                    <p class="text-xs text-gray-600 mt-3">조치 금액 대비 큰 폭으로는 증가하였으나, 2015 이후 양부와 연계에 정책의 실질적인 중요도 도약이 나타났습니다. (** 월급액 정산: 2025년 예정 결과 **)</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 법 개정 역사 탭 내용 (숨김) -->
+        <div id="detailContent" style="display: none;">
+            <p class="text-center text-gray-600 mb-6">법 개정에 따른 실태 지표의 변화를 연표 형식으로 확인할 수 있습니다.</p>
+            <div class="bg-gray-100 p-8 rounded-lg text-center text-gray-500">
+                📋 법 개정 역사 및 실태 변화 연표 (개발 예정)
+            </div>
+        </div>
+
+        <div class="mt-6 pt-4 border-t text-center">
+            <button onclick="closeModal(null, 'kpiModal')" class="px-6 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 font-medium">닫기</button>
+        </div>
+    </div>
+</div>
+
+<!-- 모달 창 - 정책 제안 -->
+<div id="policyModal" class="modal" onclick="closeModal(event, 'policyModal')">
+    <div class="modal-content" onclick="event.stopPropagation()" style="max-width: 950px;">
+        <span class="close-button" onclick="closeModal(null, 'policyModal')">&times;</span>
+        
+        <!-- 헤더 -->
+        <div class="text-center mb-8">
+            <h3 class="text-3xl font-bold text-gray-800 mb-2">정책 제안: 태어난 모든 아동의 동일한 출발선</h3>
+            <p class="text-sm text-gray-600">한부모가족의 안정된 양육 환경 조성을 위한 3대 핵심 로드맵</p>
+        </div>
+
+        <!-- 3개 제안 카드 -->
+        <div class="grid grid-cols-3 gap-4 mb-8">
+            <!-- 제안 1 -->
+            <div class="bg-blue-50 border-2 border-blue-300 rounded-lg p-5">
+                <div class="flex items-center gap-2 mb-4">
+                    <div class="w-10 h-10 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-lg">1</div>
+                    <h4 class="font-bold text-blue-900">일자리 · 돌봄 인프라 구축</h4>
+                </div>
+                <ul class="space-y-2 text-sm text-gray-700">
+                    <li class="flex gap-2">
+                        <span>•</span>
+                        <span><strong>모범적 근로장려 수당</strong>: 근로 중단 없이 안정된 양육이 가능하도록 '일·가정양립 지원 프로그램'(전일제-시간제) 설계.</span>
+                    </li>
+                    <li class="flex gap-2">
+                        <span>•</span>
+                        <span><strong>생애 초기 돌봄 시스템</strong>: 생애 초기 가구에게 양육 인프라 도입(0세부터 조기지원).</span>
+                    </li>
+                    <li class="flex gap-2">
+                        <span>•</span>
+                        <span><strong>아동 보호 안전망 구축</strong>: 전국 모든 학령기 아동을 위한 방과 후 보호 단계를 추가 구성.</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- 제안 2 -->
+            <div class="bg-green-50 border-2 border-green-300 rounded-lg p-5">
+                <div class="flex items-center gap-2 mb-4">
+                    <div class="w-10 h-10 bg-green-600 text-white rounded-full flex items-center justify-center font-bold text-lg">2</div>
+                    <h4 class="font-bold text-green-900">독립적 주거 환경 지원</h4>
+                </div>
+                <ul class="space-y-2 text-sm text-gray-700">
+                    <li class="flex gap-2">
+                        <span>•</span>
+                        <span><strong>체험협의주택의 입주 우선권 보장</strong>: 한부모 가구의 우선권 지위와 함께 현 주거 조건을 장기 임대 형태로 전환.</span>
+                    </li>
+                    <li class="flex gap-2">
+                        <span>•</span>
+                        <span><strong>생애 초기 주거 지원 확대</strong>: 출산 직후 주거 패키지 제공으로 빈곤 함정 완화.</span>
+                    </li>
+                    <li class="flex gap-2">
+                        <span>•</span>
+                        <span><strong>주거 지원 최종 목표</strong>: 학령기 아동 상급 교육기관 입학 시까지 교육권 연속성을 위한 주거 보장.</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- 제안 3 -->
+            <div class="bg-red-50 border-2 border-red-300 rounded-lg p-5">
+                <div class="flex items-center gap-2 mb-4">
+                    <div class="w-10 h-10 bg-red-600 text-white rounded-full flex items-center justify-center font-bold text-lg">3</div>
+                    <h4 class="font-bold text-red-900">재생산권 및 원가족 양육 지원</h4>
+                </div>
+                <ul class="space-y-2 text-sm text-gray-700">
+                    <li class="flex gap-2">
+                        <span>•</span>
+                        <span><strong>비혼모/부의 '선택할 권리' 보장</strong>: 모든 출산과 양육 수요에 대한 국가 지원을 명문화하여 낙인 완화.</span>
+                    </li>
+                    <li class="flex gap-2">
+                        <span>•</span>
+                        <span><strong>공명정대한 양육비 집행 체계</strong>: 원부모의 법적 양육비 이행 준수와 강제 집행 근거를 확대(압류, 직권 조치 등).</span>
+                    </li>
+                    <li class="flex gap-2">
+                        <span>•</span>
+                        <span><strong>포괄적의 정책 지원 장치</strong>: 주거비와 양육비를 포괄하는 체계적 정책이 아닌 표면적 정책 탈피.</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 문제 현황 섹션 -->
+        <div class="border-t-2 pt-6">
+            <h4 class="text-xl font-bold text-center mb-6 text-gray-800">📊 문제 현황 (데이터로 보는 한부모가족의 어려움)</h4>
+            
+            <!-- 3개 통계 카드 -->
+            <div class="grid grid-cols-3 gap-6 mb-8">
+                <!-- 통계 1 -->
+                <div class="bg-blue-50 border-2 border-blue-200 rounded-lg p-6 text-center">
+                    <div class="text-5xl font-bold text-blue-600 mb-3">25.8%</div>
+                    <div class="text-sm text-gray-700 font-semibold mb-4">연령 가구 소득이 150만 원도 안 되는 수치만 확인</div>
+                    <div class="h-40">
+                        <canvas id="policyChart1"></canvas>
+                    </div>
+                </div>
+                
+                <!-- 통계 2 -->
+                <div class="bg-green-50 border-2 border-green-200 rounded-lg p-6 text-center">
+                    <div class="text-5xl font-bold text-green-600 mb-3">23.6%</div>
+                    <div class="text-sm text-gray-700 font-semibold mb-4">주거(월세) 주거 비용을 주거 열악한 상황</div>
+                    <div class="h-40">
+                        <canvas id="policyChart2"></canvas>
+                    </div>
+                </div>
+                
+                <!-- 통계 3 -->
+                <div class="bg-red-50 border-2 border-red-200 rounded-lg p-6 text-center">
+                    <div class="text-5xl font-bold text-red-600 mb-3">21.9%</div>
+                    <div class="text-sm text-gray-700 font-semibold mb-4">마음의 안정감이 없어 김정자 등의 이들</div>
+                    <div class="text-xs text-gray-500 mb-3">"가계를 꾸려내 엄청 어려워"</div>
+                    <div class="h-40">
+                        <canvas id="policyChart3"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 구체적 생활의 어려움 -->
+            <div class="bg-gray-50 border border-gray-300 rounded-lg p-5">
+                <h5 class="font-bold text-gray-800 mb-4 text-lg">구직 및 생활의 어려움</h5>
+                <ul class="space-y-2 text-sm text-gray-700">
+                    <li>• <strong>취업의 어려움</strong>: '양육' 으로 인한 경력 단절이 심각. 구직 시 어려움은 '근무시간이나 환경이 맞지 않아서'(28.3%), '수입이나 보수가 맞지 않아서'(25.9%)로 나타남.</li>
+                    <li>• <strong>미취업 사유</strong>: 미취업자 중 일자리를 원하지 않는 이유는 '건강이 좋지 않아서'(56.9%), '자녀를 돌봐줄 데가 없어서'(21.9%), '받고 있는 정부 지원을 받지 못할까봐'(7.7%).</li>
+                    <li>• <strong>주요 경제적 부담</strong>: 가장 큰 어려움은 '양육비·교육비 부담'(81.4%)과 '자녀진로의 어려움'(67.7%). 자녀 양육비는 월 평균 58.25만원.</li>
+                    <li>• <strong>부채 원인</strong>: 부채가 있는 가구들은 '주거비 마련'(50.7%), '생활비'(40.7%) 등 기본적인 생활욕구를 만족시키기 위해 빚을 지고 있음.</li>
+                    <li>• <strong>자녀 돌봄 공백</strong>: 초등학생 자녀를 둔 한부모의 35.9%는 자녀가 평일 일과 후 돌봐주는 어른 없이 '혼자 보내는 시간이 있다'고 응답.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="mt-6 text-center text-xs text-gray-500">
+            출처: 2024년 한부모가족 실태조사, 여성가족부 한국여성정책연구원 / 정책제안: 태어난 모든 아동의 동일한 출발선 (2025. 6.)
+        </div>
+
+        <div class="mt-4 text-center">
+            <a href="https://www.mogef.go.kr/kor/skin/doc.html?fn=55ee299ef3bc4f44800fdb8402a9c4c3.pdf&rs=/rsfiles/202510/" target="_blank" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium text-sm">
+                📄 정책제안 전문 PDF 다운로드
+            </a>
+        </div>
+
+        <div class="mt-6 pt-4 border-t text-center">
+            <button onclick="closeModal(null, 'policyModal')" class="px-6 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 font-medium">닫기</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const surveyFiles = [
+        { year: '2024', fileName: 'https://www.mogef.go.kr/mp/pcd/mp_pcd_s001d.do?mid=plc503', summary: '✅ <strong>최신 분석 요약:</strong> 한부모가족의 경제적 자립도가 소폭 상승했으나, 주거 불안정성(비자가 비율 62%)은 여전히 높습니다. 여성가구주의 노동시간은 증가 추세입니다.' },
+        { year: '2021', fileName: 'https://www.mogef.go.kr/mp/pcd/mp_pcd_s001d.do?mid=plc503', summary: '🔍 <strong>주요 내용:</strong> 코로나19 팬데믹 기간 중 한부모가족의 경제적 취약성이 심화되었으며, 비양육 부모로부터의 양육비 이행률은 여전히 낮은 수준에 머물렀습니다.' },
+        { year: '2018', fileName: 'https://www.mogef.go.kr/mp/pcd/mp_pcd_s001d.do?mid=plc503', summary: '🔍 <strong>특이 사항:</strong> 청소년 한부모의 학력 중단율이 감소하는 등 자립 의지가 높게 나타났으며, 정책 정보 획득 경로는 공공기관을 통한 비율이 소폭 증가했습니다.' },
+        { year: '2015', fileName: 'https://www.mogef.go.kr/mp/pcd/mp_pcd_s001d.do?mid=plc503', summary: '📈 <strong>경제적 실태:</strong> 일반 가구 대비 소득은 절반 이하, 자산은 1/5 수준으로 경제적 격차가 두드러지게 나타났습니다. 지원 정책에 대한 인지도는 높으나 실제 수혜율은 낮았습니다.' },
+        { year: '2013', fileName: 'https://www.mogef.go.kr/mp/pcd/mp_pcd_s001d.do?mid=plc503', summary: '🛡️ <strong>최초 보고서 기반:</strong> 기초생활 보장 수급 대상 한부모의 높은 자립 의지를 확인했으며, 정책 정보 획득 경로가 주로 동사무소/주민센터에 집중되어 전달 체계 강화의 필요성이 제시되었습니다.' },
+    ];
+    
+    const yearSelector = document.getElementById('yearSelector');
+    surveyFiles.forEach(file => {
+        const button = document.createElement('button');
+        button.className = 'year-button text-base transition duration-200 ease-in-out hover:shadow-md';
+        button.textContent = `${file.year}년 실태조사 분석 보기`;
+        button.onclick = () => showSurveyAnalysis(file);
+        yearSelector.appendChild(button);
+    });
+
+    function showSurveyAnalysis(file) {
+        document.getElementById('modalTitle').textContent = `${file.year}년 한부모가족 실태조사 요약 분석`;
+        document.getElementById('modalContent').innerHTML = `
+            <div class="bg-indigo-50 p-4 rounded-lg border border-indigo-200">
+                <h4 class="text-lg font-semibold text-indigo-800 mb-2">핵심 분석 요약</h4>
+                <p class="text-base">${file.summary}</p>
+            </div>
+            <p class="mt-4 text-sm text-gray-500">
+                본 요약은 보고서의 핵심 내용 일부를 발췌한 것이며, 상세한 통계 데이터 및 방법론은 원본 PDF를 참고하십시오.
+            </p>
+        `;
+        document.getElementById('downloadLink').href = file.fileName;
+        document.getElementById('surveyModal').style.display = 'flex';
+    }
+
+    function closeModal(event, modalId) {
+        if (event && event.target.className !== 'modal') return;
+        document.getElementById(modalId).style.display = 'none';
+    }
+
+    function showKPIModal() {
+        document.getElementById('kpiModal').style.display = 'flex';
+        setTimeout(() => {
+            initKPICharts();
+        }, 100);
+    }
+
+    function showPolicyModal() {
+        document.getElementById('policyModal').style.display = 'flex';
+        setTimeout(() => {
+            initPolicyCharts();
+        }, 100);
+    }
+
+    function switchTab(tab) {
+        if (tab === 'kpi') {
+            document.getElementById('kpiContent').style.display = 'block';
+            document.getElementById('detailContent').style.display = 'none';
+            document.getElementById('kpiTab').className = 'px-6 py-3 font-semibold text-blue-600 border-b-2 border-blue-600';
+            document.getElementById('detailTab').className = 'px-6 py-3 font-semibold text-gray-500 hover:text-gray-700';
+        } else {
+            document.getElementById('kpiContent').style.display = 'none';
+            document.getElementById('detailContent').style.display = 'block';
+            document.getElementById('kpiTab').className = 'px-6 py-3 font-semibold text-gray-500 hover:text-gray-700';
+            document.getElementById('detailTab').className = 'px-6 py-3 font-semibold text-blue-600 border-b-2 border-blue-600';
+        }
+    }
+
+    function initKPICharts() {
+        // Chart 1: 정부 지원 수혜율
+        const ctx1 = document.getElementById('Chart1');
+        if (!ctx1) return;
+        
+        new Chart(ctx1.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: ['2015년', '2024년'],
+                datasets: [{
+                    label: '정부 지원 수혜율 (%)',
+                    data: [30.7, 65.9],
+                    backgroundColor: ['#fb923c', '#3b82f6']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, max: 100 }
+                }
+            }
+        });
+
+        // Chart 2: 소득과 양육비 미지급률
+        const ctx2 = document.getElementById('Chart2');
+        new Chart(ctx2.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: ['2015년', '2024년'],
+                datasets: [
+                    {
+                        label: '월평균 가구소득 (만원)',
+                        data: [189.6, 294.6],
+                        borderColor: '#10b981',
+                        backgroundColor: '#10b981',
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: '양육비 미지급률 (%)',
+                        data: [77.7, 71.3],
+                        borderColor: '#ef4444',
+                        backgroundColor: '#ef4444',
+                        yAxisID: 'y1'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom' } },
+                scales: {
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        title: { display: true, text: '소득 (만원)' }
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        title: { display: true, text: '미지급률 (%)' },
+                        grid: { drawOnChartArea: false }
+                    }
+                }
+            }
+        });
+
+        // Chart 3: 월 아동양육비 지급액
+        const ctx3 = document.getElementById('Chart3');
+        const supportYears = [2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025];
+        const supportAmounts = [100000, 120000, 130000, 150000, 160000, 170000, 180000, 200000, 220000, 230000, 240000];
+        
+        new Chart(ctx3.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: supportYears,
+                datasets: [{
+                    label: '월 아동양육비 지급액 (원)',
+                    data: supportAmounts,
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointHoverRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { 
+                    legend: { display: false }
+                },
+                scales: {
+                    y: { 
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value.toLocaleString() + '원';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function initPolicyCharts() {
+        // 정책 차트 1: 소득 150만원 미만 비율
+        const ctx1 = document.getElementById('policyChart1');
+        if (!ctx1) return;
+        
+        new Chart(ctx1.getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: ['150만원 미만', '150만원 이상'],
+                datasets: [{
+                    data: [25.8, 74.2],
+                    backgroundColor: ['#3b82f6', '#e5e7eb'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+
+        // 정책 차트 2: 주거 열악 비율
+        const ctx2 = document.getElementById('policyChart2');
+        new Chart(ctx2.getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: ['주거 열악', '주거 양호'],
+                datasets: [{
+                    data: [23.6, 76.4],
+                    backgroundColor: ['#10b981', '#e5e7eb'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+
+        // 정책 차트 3: 가계 어려움 비율
+        const ctx3 = document.getElementById('policyChart3');
+        new Chart(ctx3.getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: ['가계 어려움', '가계 양호'],
+                datasets: [{
+                    data: [21.9, 78.1],
+                    backgroundColor: ['#ef4444', '#e5e7eb'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    }
+
+    const years = ['2014', '2015', '2016', '2017', '2018', '2019', '2020', '2021', '2022', '2023', '2024', '2025'];
+    
+    const dataSets = {
+        '양육비 지원': [515.64, 724.42, 724.42, 925.40, 918.23, 2069.00, 2545.47, 3066.69, 4212.75, 4959.00, 5355.93, 5528.33],
+        '청소년한부모 지원': [22.87, 23.03, 19.70, 20.17, 25.30, 31.46, 41.00, 58.95, 63.23, 52.05, 33.03, 27.23],
+        '복지시설 자립지원 (아이돌봄비)': [34.60, 36.97, 34.42, 18.60, 15.25, 64.93, 66.02, 54.95, 55.16, 44.57, 52.45, 58.46],
+        '복지시설 운영 지원': [0, 0, 0, 0, 0, 44.19, 25.52, 25.52, 25.26, 13.69, 13.69, 13.69],
+        '무료 법률구조': [0, 0, 0, 2.90, 2.90, 2.90, 2.90, 4.92, 4.92, 4.92, 4.92, 4.92],
+    };
+    
+    const totalBudget = years.map((_, yearIndex) => {
+        let sum = 0;
+        for (const key in dataSets) {
+            if (dataSets[key][yearIndex]) {
+                sum += dataSets[key][yearIndex];
+            }
+        }
+        return sum;
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx1 = document.getElementById('totalBudgetChart').getContext('2d');
+
+        new Chart(ctx1, {
+            type: 'bar',
+            data: {
+                labels: years,
+                datasets: [
+                    {
+                        label: '총 예산 합계 (억 원)',
+                        data: totalBudget,
+                        backgroundColor: 'rgba(59, 130, 246, 0.8)', 
+                        borderColor: 'rgb(30, 64, 175)',
+                        borderWidth: 1,
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: '핵심: 양육비 지원 예산 (억 원)',
+                        data: dataSets['양육비 지원'],
+                        type: 'line',
+                        borderColor: 'rgb(251, 191, 36)',
+                        backgroundColor: 'rgb(251, 191, 36)',
+                        borderWidth: 3,
+                        fill: false,
+                        yAxisID: 'y1',
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                        tension: 0.3
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'top' } },
+                scales: {
+                    x: { title: { display: true, text: '연도' } },
+                    y: {
+                        type: 'linear', display: true, position: 'left',
+                        title: { display: true, text: '총 예산 합계 (억 원)' },
+                        grid: { drawOnChartArea: true }
+                    },
+                    y1: {
+                        type: 'linear', display: true, position: 'right',
+                        title: { display: true, text: '양육비 지원 예산 (억 원)' },
+                        grid: { drawOnChartArea: false },
+                        min: 0, 
+                        suggestedMax: Math.max(...totalBudget) * 1.05
+                    }
+                }
+            }
+        });
+
+        const breakdownLabels = Object.keys(dataSets);
+        const breakdownColors = ['#3B82F6', '#FBBF24', '#10B981', '#EF4444', '#6366F1'];
+
+        const breakdownDataSets = breakdownLabels.map((label, index) => ({
+            label: label,
+            data: dataSets[label],
+            backgroundColor: breakdownColors[index],
+            stack: 'Stack 1'
+        }));
+
+        const ctx2 = document.getElementById('breakdownChart').getContext('2d');
+
+        new Chart(ctx2, {
+            type: 'bar',
+            data: {
+                labels: years,
+                datasets: breakdownDataSets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'top' },
+                    tooltip: { mode: 'index', intersect: false } 
+                },
+                scales: {
+                    x: { stacked: true, title: { display: true, text: '연도' } },
+                    y: {
+                        stacked: true,
+                        title: { display: true, text: '예산 규모 (억 원)' },
+                        min: 0
+                    }
+                }
+            }
+        });
+    });
+</script>
+
+</body>
+</html>
